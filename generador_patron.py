@@ -1,3 +1,18 @@
+import pandas as pd
+import numpy as np
+
+from copy import copy
+from statistics import median
+
+from openpyxl import Workbook
+from openpyxl import load_workbook
+
+from openpyxl.styles import (
+    Font,
+    PatternFill,
+    Alignment
+)
+
 def ejecutar_patron(
     historico_path,
     proyectos_path,
