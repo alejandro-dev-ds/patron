@@ -1,11 +1,23 @@
 import streamlit as st
-from pathlib import Path
 from generador_patron import ejecutar_patron
 
 st.set_page_config(
     page_title="Generador de Patrón",
     layout="wide"
 )
+
+# Inicialización
+if "patron_file" not in st.session_state:
+    st.session_state.patron_file = None
+
+if "revision_file" not in st.session_state:
+    st.session_state.revision_file = None
+
+if "patron_name" not in st.session_state:
+    st.session_state.patron_name = None
+
+if "revision_name" not in st.session_state:
+    st.session_state.revision_name = None
 
 st.title("Generador de patrón de horas")
 
@@ -58,18 +70,34 @@ if st.button("Generar patrón"):
         "ejemplo_tabla_patron.xlsx"
     )
 
-    st.success("Proceso finalizado")
-
+    # Guardar archivos en memoria
     with open(patron, "rb") as f:
-        st.download_button(
-            "Descargar patrón",
-            f,
-            file_name=patron
-        )
+        st.session_state.patron_file = f.read()
 
     with open(archivo_revision, "rb") as f:
-        st.download_button(
-            "Descargar correcciones actualizadas",
-            f,
-            file_name=archivo_revision
-        )
+        st.session_state.revision_file = f.read()
+
+    st.session_state.patron_name = patron
+    st.session_state.revision_name = archivo_revision
+
+    st.success("Proceso finalizado")
+
+# Mostrar siempre los botones si existen resultados
+if st.session_state.patron_file is not None:
+
+    st.download_button(
+        label="📥 Descargar patrón",
+        data=st.session_state.patron_file,
+        file_name=st.session_state.patron_name,
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+if st.session_state.revision_file is not None:
+
+    st.download_button(
+        label="📥 Descargar correcciones actualizadas",
+        data=st.session_state.revision_file,
+        file_name=st.session_state.revision_name,
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        on_click="ignore"
+    )
