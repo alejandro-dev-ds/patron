@@ -1,4 +1,5 @@
 import streamlit as st
+from pathlib import Path
 
 from generador_patron import ejecutar_patron
 
@@ -30,46 +31,70 @@ correcciones = st.file_uploader(
 
 if st.button("Generar patrón"):
 
-    if not historico:
+    if historico is None:
         st.error("Falta histórico de horas")
         st.stop()
 
-    if not proyectos:
+    if proyectos is None:
         st.error("Falta tabla de proyectos")
         st.stop()
 
-    if not correcciones:
+    if correcciones is None:
         st.error("Falta archivo de correcciones")
         st.stop()
 
-    with open("historico.xlsx", "wb") as f:
-        f.write(historico.getbuffer())
+    try:
 
-    with open("proyectos.xlsx", "wb") as f:
-        f.write(proyectos.getbuffer())
-
-    with open("correcciones.xlsx", "wb") as f:
-        f.write(correcciones.getbuffer())
-
-    patron, archivo_revision = ejecutar_patron(
-        "historico.xlsx",
-        "proyectos.xlsx",
-        "correcciones.xlsx",
-        "ejemplo_tabla_patron.xlsx"
-    )
-
-    st.success("Proceso finalizado")
-
-    with open(patron, "rb") as f:
-        st.download_button(
-            "Descargar patrón",
-            f,
-            file_name=patron
+        Path("historico.xlsx").write_bytes(
+            historico.getbuffer()
         )
 
-    with open(archivo_revision, "rb") as f:
-        st.download_button(
-            "Descargar correcciones actualizadas",
-            f,
-            file_name=archivo_revision
+        Path("proyectos.xlsx").write_bytes(
+            proyectos.getbuffer()
         )
+
+        Path("correcciones.xlsx").write_bytes(
+            correcciones.getbuffer()
+        )
+
+        with st.spinner("Generando patrón..."):
+
+            patron, archivo_revision = ejecutar_patron(
+                "historico.xlsx",
+                "proyectos.xlsx",
+                "correcciones.xlsx",
+                "ejemplo_tabla_patron.xlsx"
+            )
+
+        st.success("Proceso finalizado correctamente")
+
+        patron_bytes = Path(patron).read_bytes()
+
+        st.download_button(
+            label="📥 Descargar patrón",
+            data=patron_bytes,
+            file_name=Path(patron).name,
+            mime=(
+                "application/"
+                "vnd.openxmlformats-officedocument."
+                "spreadsheetml.sheet"
+            )
+        )
+
+        revision_bytes = Path(
+            archivo_revision
+        ).read_bytes()
+
+        st.download_button(
+            label="📥 Descargar correcciones actualizadas",
+            data=revision_bytes,
+            file_name=Path(archivo_revision).name,
+            mime=(
+                "application/"
+                "vnd.openxmlformats-officedocument."
+                "spreadsheetml.sheet"
+            )
+        )
+
+    except Exception as e:
+        st.error(f"Error durante la ejecución: {e}")
