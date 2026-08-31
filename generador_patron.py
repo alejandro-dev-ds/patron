@@ -1,12 +1,20 @@
-import pandas as pd
-
-
 def ejecutar_patron(
-    df_hist_horas,
-    df_projects,
-    df_correciones,
+    historico_path,
+    proyectos_path,
+    correcciones_path,
     plantilla
 ):
+
+    df_hist_horas = pd.read_excel(
+        historico_path,
+        engine="openpyxl"
+    )
+
+    df_projects = pd.read_excel(
+        proyectos_path,
+        engine="openpyxl"
+    )
+
     df_projects = df_projects.rename(columns={"ACRÓNIMO": "PROYECTO"})
     df_projects = df_projects[df_projects["ESTADO"]=="CERRADO"]
 
@@ -132,7 +140,7 @@ def ejecutar_patron(
 
 
     df_correcciones = leer_correcciones_visual(
-        "correcciones_actualizadas.xlsx",
+        correcciones_path,
         lista_planificaciones
     )
 
